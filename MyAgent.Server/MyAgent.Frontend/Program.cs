@@ -6,7 +6,6 @@ using Anthropic;
 using Anthropic.Models.Messages;
 using MyAgent.Backend.Chat;
 using MyAgent.Backend.Provider.Claude;
-using Block = MyAgent.Backend.Core.Block;
 
 ServiceCollection Services = new ServiceCollection();
 Services.AddSingleton<AuthConfig>();
@@ -80,20 +79,4 @@ while (true)
 	}
 
 	Console.WriteLine();
-	
-	Console.WriteLine("\n--- 완료된 블록 ---");
-	foreach (Block Block in Reader.Blocks)
-	{
-		switch (Block)
-		{
-			case Block.Thinking ThinkingBlock:
-				Console.WriteLine($"Thinking : {ThinkingBlock.Content} {(ThinkingBlock.Payload != null ? ThinkingBlock.Payload.Data : null)}");
-				break;
-
-			case Block.Text TextBlock:
-				Console.WriteLine($"Text : {TextBlock.Content}");
-				break;
-		}
-	}
-	Console.WriteLine(Reader.FinalStopReason);
 }
