@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MyAgent.Backend/MyAgent.Backend.csproj" />
+  <Project Path="MyAgent.Frontend/MyAgent.Frontend.csproj" />
+</Solution>
