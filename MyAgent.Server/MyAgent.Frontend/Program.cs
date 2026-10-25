@@ -33,24 +33,39 @@ if (!Auth.HasKey(ClaudeKeyName))
 
 AnthropicClient Client = new AnthropicClient { ApiKey = Auth.GetKey(ClaudeKeyName)! };
 
-MessageCreateParams Parameters = new MessageCreateParams
+while (true)
 {
-	Model = "claude-opus-5-5",
-	MaxTokens = 1024,
-	Messages = new List<MessageParam>
+	Console.Write("\n> ");
+	string? Input = Console.ReadLine();
+
+	if (string.IsNullOrWhiteSpace(Input))
+		continue;
+
+	if (Input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+		break;
+
+	MessageCreateParams Parameters = new MessageCreateParams
 	{
-		new MessageParam
+		Model = "claude-opus-5-5",
+		MaxTokens = 1024,
+		Messages = new List<MessageParam>
 		{
-			Role = Role.User,
-			Content = "안녕하세요! 간단히 자기소개 해주세요."
+			new MessageParam
+			{
+				Role = Role.User,
+				Content = Input
+			}
+		}
+	};
+
+	await foreach (RawMessageStreamEvent RawEvent in Client.Messages.CreateStreaming(Parameters))
+	{
+		if (RawEvent.TryPickContentBlockDelta(out RawContentBlockDeltaEvent? Delta) &&
+		    Delta.Delta.TryPickText(out TextDelta? Text))
+		{
+			Console.Write(Text.Text);
 		}
 	}
-};
 
-Message Response = await Client.Messages.Create(Parameters);
-
-foreach (ContentBlock Block in Response.Content)
-{
-	if (Block.TryPickText(out TextBlock? Text))
-		Console.WriteLine(Text.Text);
+	Console.WriteLine();
 }
