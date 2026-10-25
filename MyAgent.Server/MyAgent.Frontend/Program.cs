@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using MyAgent.Backend.Auth;
 using Anthropic;
 using Anthropic.Models.Messages;
+using MyAgent.Backend.Chat;
+using MyAgent.Backend.Provider.Claude;
+using Block = MyAgent.Backend.Core.Block;
 
 ServiceCollection Services = new ServiceCollection();
 Services.AddSingleton<AuthConfig>();
@@ -55,17 +58,42 @@ while (true)
 				Role = Role.User,
 				Content = Input
 			}
-		}
+		},
+		Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
+		OutputConfig = new OutputConfig { Effort = Effort.High }
 	};
 
+	ClaudeStreamReader Reader = new ClaudeStreamReader();
+	
 	await foreach (RawMessageStreamEvent RawEvent in Client.Messages.CreateStreaming(Parameters))
 	{
-		if (RawEvent.TryPickContentBlockDelta(out RawContentBlockDeltaEvent? Delta) &&
-		    Delta.Delta.TryPickText(out TextDelta? Text))
+		switch (Reader.Process(RawEvent))
 		{
-			Console.Write(Text.Text);
+			case ChatEvent.Thinking Think:
+				Console.Write(Think.Content);
+				break;
+
+			case ChatEvent.Assistant Reply:
+				Console.Write(Reply.Content);
+				break;
 		}
 	}
 
 	Console.WriteLine();
+	
+	Console.WriteLine("\n--- 완료된 블록 ---");
+	foreach (Block Block in Reader.Blocks)
+	{
+		switch (Block)
+		{
+			case Block.Thinking ThinkingBlock:
+				Console.WriteLine($"Thinking : {ThinkingBlock.Content} {(ThinkingBlock.Payload != null ? ThinkingBlock.Payload.Data : null)}");
+				break;
+
+			case Block.Text TextBlock:
+				Console.WriteLine($"Text : {TextBlock.Content}");
+				break;
+		}
+	}
+	Console.WriteLine(Reader.FinalStopReason);
 }
