@@ -1,0 +1,16 @@
+# C# 빌드 산출물
+bin/
+obj/
+Build/
+
+# Visual Studio와 Rider가 만드는 파일
+.vs/
+.idea/
+*.user
+
+# 9장의 연습용 MCP Server가 저장하는 메모
+SampleMcp/notes.json
+
+# 비밀 정보는 어떤 경우에도 커밋하지 않는다
+AuthConfig.json
+.env
