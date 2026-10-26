@@ -4,22 +4,27 @@ using Anthropic.Models.Messages;
 using MyAgent.Backend.Conversation;
 using Block = MyAgent.Backend.Core.Block;
 using UserInput = MyAgent.Backend.Conversation.UserInput;
-	// Claude SDK에도 UserInput이라는 타입이 있어서 우리 타입을 명시함.
 
 namespace MyAgent.Backend.Provider.Claude;
 
 public static class ClaudeRequest
 {
-	// 대화 기록을 Claude의 요청 모양으로 바꿉니다.
+	public static MessageCreateParams Build(ModelRequest Request)
+	{
+		// 우리 요청을 Claude의 요청으로 바꾼다.
 
+		return new MessageCreateParams
+		{
+			Model = Request.Model,
+			MaxTokens = Request.MaxTokens,
+			Messages = ToMessages(Request.Messages),
+			Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
+			OutputConfig = new OutputConfig { Effort = Effort.High }
+		};
+	}
+	
 	public static List<MessageParam> ToMessages(IReadOnlyList<MessageSpan> Spans)
 	{
-		// ToMessage() 함수는 저장된 대화를 Claude API가 원하는 메세지 목록(List<MessageParam>)으로 변환해줌.
-		// 각 MessageSpan을 순서대로 돌며 사용자 입력은 User 메세지로,
-		// 응답 블록은 Assistant 메세지로 만듦. 이때 우리 타입을 Claude SDK의 타입으로 변환.
-		// Claude API는 user ↔ assistant 교대를 요구함.
-		// 예: [user] → [assistant: thinking+text] → [user] → [assistant: text] …
-
 		List<MessageParam> Messages = new List<MessageParam>();
 
 		foreach (MessageSpan MessageSpan in Spans)
