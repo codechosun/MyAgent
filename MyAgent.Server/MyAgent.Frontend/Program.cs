@@ -6,13 +6,18 @@ using Anthropic;
 using Anthropic.Models.Messages;
 using MyAgent.Backend.Chat;
 using MyAgent.Backend.Provider.Claude;
+using MyAgent.Backend.Agent;
+using MyAgent.Backend.Conversation;
+using MyAgent.Backend.Provider;
 
 ServiceCollection Services = new ServiceCollection();
 Services.AddSingleton<AuthConfig>();
+Services.AddSingleton<AgentSession>();
 
 ServiceProvider ServiceProvider = Services.BuildServiceProvider();
 
 AuthConfig Auth = ServiceProvider.GetRequiredService<AuthConfig>();
+AgentSession AgentSession = ServiceProvider.GetRequiredService<AgentSession>();
 
 Auth.Load();
 
@@ -45,19 +50,14 @@ while (true)
 
 	if (Input.Equals("exit", StringComparison.OrdinalIgnoreCase))
 		break;
-
+	
+	MessageSpan CurrentMessageSpan = AgentSession.Conversation.AddMessageSpan(Input);
+	
 	MessageCreateParams Parameters = new MessageCreateParams
 	{
 		Model = "claude-opus-5-5",
 		MaxTokens = 1024,
-		Messages = new List<MessageParam>
-		{
-			new MessageParam
-			{
-				Role = Role.User,
-				Content = Input
-			}
-		},
+		Messages = ClaudeRequest.ToMessages(AgentSession.Conversation.Spans),
 		Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
 		OutputConfig = new OutputConfig { Effort = Effort.High }
 	};
@@ -75,6 +75,15 @@ while (true)
 			case ChatEvent.Assistant Reply:
 				Console.Write(Reply.Content);
 				break;
+		}
+	}
+	
+	switch (Reader.Complete())
+	{
+		case ModelTurnResult.EndSpan EndResult:
+		{
+			CurrentMessageSpan.AssistantSpans.Add(EndResult.CompletedSpan);
+			break;
 		}
 	}
 
