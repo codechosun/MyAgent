@@ -6,7 +6,8 @@ public sealed record UserInput(string Text)
 {
 	public static implicit operator UserInput(string Text)
 	{
-		return new UserInput(Text);
+		UserInput Converted = new UserInput(Text);
+		return Converted;
 	}
 	
 }

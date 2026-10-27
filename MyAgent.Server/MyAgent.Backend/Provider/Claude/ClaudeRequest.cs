@@ -13,7 +13,7 @@ public static class ClaudeRequest
 	{
 		// 우리 요청을 Claude의 요청으로 바꾼다.
 
-		return new MessageCreateParams
+		MessageCreateParams Parameters = new MessageCreateParams
 		{
 			Model = Request.Model,
 			MaxTokens = Request.MaxTokens,
@@ -21,6 +21,7 @@ public static class ClaudeRequest
 			Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
 			OutputConfig = new OutputConfig { Effort = Effort.High }
 		};
+		return Parameters;
 	}
 	
 	public static List<MessageParam> ToMessages(IReadOnlyList<MessageSpan> Spans)
@@ -51,7 +52,8 @@ public static class ClaudeRequest
 		if (!bIsTextEmpty)
 			Blocks.Add(new TextBlockParam { Text = Input.Text });
 
-		return new MessageParam { Role = Role.User, Content = Blocks };
+		MessageParam UserMessage = new MessageParam { Role = Role.User, Content = Blocks };
+		return UserMessage;
 	}
 
 	private static MessageParam ToAssistantMessage(IReadOnlyList<Block> Blocks)
@@ -88,6 +90,7 @@ public static class ClaudeRequest
 			}
 		}
 
-		return new MessageParam { Role = Role.Assistant, Content = ContentBlocks };
+		MessageParam AssistantMessage = new MessageParam { Role = Role.Assistant, Content = ContentBlocks };
+		return AssistantMessage;
 	}
 }

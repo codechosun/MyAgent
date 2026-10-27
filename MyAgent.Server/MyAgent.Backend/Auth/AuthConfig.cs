@@ -16,12 +16,14 @@ public sealed class AuthConfig
 	private readonly Dictionary<string, string> Keys = new Dictionary<string, string>();
 	public string? GetKey(string Name)
 	{
-		return Keys.GetValueOrDefault(Name);
+		string? Key = Keys.GetValueOrDefault(Name);
+		return Key;
 	}
 
 	public bool HasKey(string Name)
 	{
-		return !string.IsNullOrWhiteSpace(GetKey(Name));
+		bool bHasKey = !string.IsNullOrWhiteSpace(GetKey(Name));
+		return bHasKey;
 	}
 
 	public void SetKey(string Name, string Key)

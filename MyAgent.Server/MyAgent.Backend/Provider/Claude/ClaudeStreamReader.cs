@@ -34,21 +34,40 @@ public sealed class ClaudeStreamReader
 
 	public ChatEvent? Process(RawMessageStreamEvent RawEvent)
 	{
-		if (RawEvent.TryPickStart(out RawMessageStartEvent? MessageStartEvent))
-			return ProcessMessageStart(MessageStartEvent);
+		bool bIsMessageStart = RawEvent.TryPickStart(out RawMessageStartEvent? MessageStartEvent);
+		if (bIsMessageStart)
+		{
+			ChatEvent? Event = ProcessMessageStart(MessageStartEvent!);
+			return Event;
+		}
 
-		if (RawEvent.TryPickContentBlockStart(out RawContentBlockStartEvent? BlockStartEvent))
-			return ProcessBlockStart(BlockStartEvent);
+		bool bIsBlockStart = RawEvent.TryPickContentBlockStart(out RawContentBlockStartEvent? BlockStartEvent);
+		if (bIsBlockStart)
+		{
+			ChatEvent? Event = ProcessBlockStart(BlockStartEvent!);
+			return Event;
+		}
 
-		if (RawEvent.TryPickContentBlockDelta(out RawContentBlockDeltaEvent? BlockDeltaEvent))
-			return ProcessBlockDelta(BlockDeltaEvent);
+		bool bIsBlockDelta = RawEvent.TryPickContentBlockDelta(out RawContentBlockDeltaEvent? BlockDeltaEvent);
+		if (bIsBlockDelta)
+		{
+			ChatEvent? Event = ProcessBlockDelta(BlockDeltaEvent!);
+			return Event;
+		}
 
 		bool bIsBlockStop = RawEvent.TryPickContentBlockStop(out RawContentBlockStopEvent? BlockStopEvent);
 		if (bIsBlockStop)
-			return ProcessBlockStop();
+		{
+			ChatEvent? Event = ProcessBlockStop();
+			return Event;
+		}
 
-		if (RawEvent.TryPickDelta(out RawMessageDeltaEvent? MessageDeltaEvent))
-			return ProcessMessageDelta(MessageDeltaEvent);
+		bool bIsMessageDelta = RawEvent.TryPickDelta(out RawMessageDeltaEvent? MessageDeltaEvent);
+		if (bIsMessageDelta)
+		{
+			ChatEvent? Event = ProcessMessageDelta(MessageDeltaEvent!);
+			return Event;
+		}
 
 		return null;
 	}
@@ -78,22 +97,30 @@ public sealed class ClaudeStreamReader
 		switch (CurrentBlock)
 		{
 			case ActiveBlock.Text:
-				if (BlockDeltaEvent.Delta.TryPickText(out TextDelta? TextDelta))
+				bool bIsTextDelta = BlockDeltaEvent.Delta.TryPickText(out TextDelta? TextDelta);
+				if (bIsTextDelta)
 				{
-					TextBuffer.Append(TextDelta.Text);
-					return new ChatEvent.Assistant(TextDelta.Text);
+					TextBuffer.Append(TextDelta!.Text);
+					ChatEvent.Assistant AssistantEvent = new ChatEvent.Assistant(TextDelta.Text);
+					return AssistantEvent;
 				}
 				return null;
 
 			case ActiveBlock.Thinking:
-				if (BlockDeltaEvent.Delta.TryPickThinking(out ThinkingDelta? ThinkingDelta))
+				bool bIsThinkingDelta = BlockDeltaEvent.Delta.TryPickThinking(out ThinkingDelta? ThinkingDelta);
+				if (bIsThinkingDelta)
 				{
-					ThinkingBuffer.Append(ThinkingDelta.Thinking);
-					return new ChatEvent.Thinking(ThinkingDelta.Thinking);
+					ThinkingBuffer.Append(ThinkingDelta!.Thinking);
+					ChatEvent.Thinking ThinkingEvent = new ChatEvent.Thinking(ThinkingDelta.Thinking);
+					return ThinkingEvent;
 				}
-				else if (BlockDeltaEvent.Delta.TryPickSignature(out SignatureDelta? SignatureDelta))
+				else
 				{
-					ThinkingSignature = SignatureDelta.Signature;
+					bool bIsSignatureDelta = BlockDeltaEvent.Delta.TryPickSignature(out SignatureDelta? SignatureDelta);
+					if (bIsSignatureDelta)
+					{
+						ThinkingSignature = SignatureDelta!.Signature;
+					}
 				}
 				return null;
 
@@ -154,7 +181,8 @@ public sealed class ClaudeStreamReader
 			AssistantBlocks = AssistantBlocks.ToList(),
 		};
 
-		return new ModelTurnResult.EndSpan(CompletedSpan);
+		ModelTurnResult.EndSpan EndResult = new ModelTurnResult.EndSpan(CompletedSpan);
+		return EndResult;
 	}
 	
 }

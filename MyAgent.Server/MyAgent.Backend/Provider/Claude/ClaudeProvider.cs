@@ -29,7 +29,8 @@ public sealed class ClaudeProvider : IModelProvider
 
 	public string? CheckReady()
 	{
-		return Auth.HasKey(KeyName) ? null : $"{KeyLabel}가 설정되지 않았습니다.";
+		string? Problem = Auth.HasKey(KeyName) ? null : $"{KeyLabel}가 설정되지 않았습니다.";
+		return Problem;
 	}
 	
 	private AnthropicClient GetClient()

@@ -27,13 +27,14 @@ if (!bHasKey)
 	Console.Write($"{Provider.KeyLabel}를 입력하세요: ");
 	string? Key = Console.ReadLine();
 
-	if (string.IsNullOrWhiteSpace(Key))
+	bool bIsKeyEmpty = string.IsNullOrWhiteSpace(Key);
+	if (bIsKeyEmpty)
 	{
 		Console.WriteLine($"{Provider.KeyLabel}가 입력되지 않았습니다.");
 		return;
 	}
 
-	Auth.SetKey(Provider.KeyName, Key);
+	Auth.SetKey(Provider.KeyName, Key!);
 	Console.WriteLine($"{Provider.KeyLabel} 저장 완료!");
 }
 
@@ -42,10 +43,11 @@ while (true)
 	Console.Write("\n> ");
 	string? Input = Console.ReadLine();
 
-	if (string.IsNullOrWhiteSpace(Input))
+	bool bIsInputEmpty = string.IsNullOrWhiteSpace(Input);
+	if (bIsInputEmpty)
 		continue;
 
-	bool bIsExit = Input.Equals("exit", StringComparison.OrdinalIgnoreCase);
+	bool bIsExit = Input!.Equals("exit", StringComparison.OrdinalIgnoreCase);
 	if (bIsExit)
 		break;
 	
