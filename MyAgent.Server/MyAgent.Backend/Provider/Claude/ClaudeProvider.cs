@@ -49,7 +49,8 @@ public sealed class ClaudeProvider : IModelProvider
 		MessageCreateParams Parameters = ClaudeRequest.Build(Request);
 		ClaudeStreamReader Reader = new ClaudeStreamReader();
 
-		await foreach (RawMessageStreamEvent RawEvent in GetClient().Messages.CreateStreaming(Parameters, CancelToken))
+		IAsyncEnumerable<RawMessageStreamEvent> RawEvents = GetClient().Messages.CreateStreaming(Parameters, CancelToken);
+		await foreach (RawMessageStreamEvent RawEvent in RawEvents)
 		{
 			ChatEvent? Event = Reader.Process(RawEvent);
 			if (Event != null)

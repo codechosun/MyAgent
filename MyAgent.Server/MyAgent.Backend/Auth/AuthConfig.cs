@@ -33,7 +33,8 @@ public sealed class AuthConfig
 	private void Save()
 	{
 		string Dir = Path.GetDirectoryName(ConfigPath)!;
-		if (!Directory.Exists(Dir))
+		bool bDirExists = Directory.Exists(Dir);
+		if (!bDirExists)
 			Directory.CreateDirectory(Dir);
 
 		JsonObject Root = new JsonObject();
@@ -45,7 +46,8 @@ public sealed class AuthConfig
 
 	public void Load()
 	{
-		if (!File.Exists(ConfigPath))
+		bool bConfigExists = File.Exists(ConfigPath);
+		if (!bConfigExists)
 			return;
 
 		string Json = File.ReadAllText(ConfigPath);

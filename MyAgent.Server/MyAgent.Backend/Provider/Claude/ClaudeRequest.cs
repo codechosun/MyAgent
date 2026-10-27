@@ -47,7 +47,8 @@ public static class ClaudeRequest
 
 		List<ContentBlockParam> Blocks = new List<ContentBlockParam>();
 
-		if (!string.IsNullOrWhiteSpace(Input.Text))
+		bool bIsTextEmpty = string.IsNullOrWhiteSpace(Input.Text);
+		if (!bIsTextEmpty)
 			Blocks.Add(new TextBlockParam { Text = Input.Text });
 
 		return new MessageParam { Role = Role.User, Content = Blocks };

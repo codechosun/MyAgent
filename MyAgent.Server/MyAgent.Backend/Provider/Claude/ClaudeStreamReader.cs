@@ -43,7 +43,8 @@ public sealed class ClaudeStreamReader
 		if (RawEvent.TryPickContentBlockDelta(out RawContentBlockDeltaEvent? BlockDeltaEvent))
 			return ProcessBlockDelta(BlockDeltaEvent);
 
-		if (RawEvent.TryPickContentBlockStop(out RawContentBlockStopEvent? BlockStopEvent))
+		bool bIsBlockStop = RawEvent.TryPickContentBlockStop(out RawContentBlockStopEvent? BlockStopEvent);
+		if (bIsBlockStop)
 			return ProcessBlockStop();
 
 		if (RawEvent.TryPickDelta(out RawMessageDeltaEvent? MessageDeltaEvent))
@@ -59,11 +60,15 @@ public sealed class ClaudeStreamReader
 
 	private ChatEvent? ProcessBlockStart(RawContentBlockStartEvent BlockStartEvent)
 	{
-		if (BlockStartEvent.ContentBlock.TryPickText(out _))
+		bool bIsTextBlock = BlockStartEvent.ContentBlock.TryPickText(out _);
+		if (bIsTextBlock)
 			CurrentBlock = new ActiveBlock.Text();
-
-		else if (BlockStartEvent.ContentBlock.TryPickThinking(out _))
-			CurrentBlock = new ActiveBlock.Thinking();
+		else
+		{
+			bool bIsThinkingBlock = BlockStartEvent.ContentBlock.TryPickThinking(out _);
+			if (bIsThinkingBlock)
+				CurrentBlock = new ActiveBlock.Thinking();
+		}
 
 		return null;
 	}

@@ -21,7 +21,8 @@ IModelProvider Provider = ServiceProvider.GetRequiredService<IModelProvider>();
 
 Auth.Load();
 
-if (!Auth.HasKey(Provider.KeyName))
+bool bHasKey = Auth.HasKey(Provider.KeyName);
+if (!bHasKey)
 {
 	Console.Write($"{Provider.KeyLabel}를 입력하세요: ");
 	string? Key = Console.ReadLine();
@@ -44,7 +45,8 @@ while (true)
 	if (string.IsNullOrWhiteSpace(Input))
 		continue;
 
-	if (Input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+	bool bIsExit = Input.Equals("exit", StringComparison.OrdinalIgnoreCase);
+	if (bIsExit)
 		break;
 	
 	MessageSpan CurrentMessageSpan = AgentSession.Conversation.AddMessageSpan(Input);
@@ -57,7 +59,8 @@ while (true)
 	};
 	
 	ModelTurn Turn = new ModelTurn();
-	await foreach (ChatEvent Event in Provider.StreamAsync(Request, Turn))
+	IAsyncEnumerable<ChatEvent> Events = Provider.StreamAsync(Request, Turn);
+	await foreach (ChatEvent Event in Events)
 	{
 		switch (Event)
 		{
