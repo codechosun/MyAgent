@@ -55,7 +55,7 @@ while (true)
 	
 	ModelRequest Request = new ModelRequest
 	{
-        Model = "claude-opus-5-5",
+		Model = "claude-opus-5-5",
 		MaxTokens = 1024,
 		Messages = AgentSession.Conversation.Spans
 	};

@@ -174,7 +174,7 @@ public sealed class ClaudeStreamReader
 		// 이 반환값으로 다음 행동(이어서 호출, 종료)을 결정합니다.
 		// ModelTurnResult에는 Continue와 EndSpan 두 가지가 있는데,
 		// 지금은 Tool이 없으므로 항상 EndTurn을 돌려줌.
-		// Continue는 5장에서 종료 이유(FinalStopReason)에 따라 돌려줌. 
+		// Continue는 5장에서 종료 이유(FinalStopReason)에 따라 돌려줌.
 
 		AssistantSpan CompletedSpan = new AssistantSpan
 		{
