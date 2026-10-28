@@ -62,7 +62,7 @@ public static class ClaudeRequest
 
 	private static MessageParam ToAssistantMessage(IReadOnlyList<Block> AssistantBlocks)
 	{
-		// MessageSpan.AssistantSpans 속에 AssistantBlock(우리 Block 타입)을 넘겨받아
+		// MessageSpan.AssistantSpans 속에 AssistantBlocks(우리 Block 타입)를 넘겨받아
 		// Claude의 ContentBlock으로 변환
 
 		List<ContentBlockParam> ContentBlockParams = new List<ContentBlockParam>();
