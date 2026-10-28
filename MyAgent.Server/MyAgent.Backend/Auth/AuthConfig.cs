@@ -7,16 +7,16 @@ namespace MyAgent.Backend.Auth;
 
 public sealed class AuthConfig
 {
-	private readonly string ConfigPath = Path.Combine(
+	private readonly string _ConfigPath = Path.Combine(
 		Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
 		".myagent", "AuthConfig.json");
 
-	private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions { WriteIndented = true };
+	private static readonly JsonSerializerOptions _JsonOptions = new JsonSerializerOptions { WriteIndented = true };
 
-	private readonly Dictionary<string, string> Keys = new Dictionary<string, string>();
+	private readonly Dictionary<string, string> _Keys = new Dictionary<string, string>();
 	public string? GetKey(string Name)
 	{
-		string? Key = Keys.GetValueOrDefault(Name);
+		string? Key = _Keys.GetValueOrDefault(Name);
 		return Key;
 	}
 
@@ -28,13 +28,13 @@ public sealed class AuthConfig
 
 	public void SetKey(string Name, string Key)
 	{
-		Keys[Name] = Key;
+		_Keys[Name] = Key;
 		Save();
 	}
 
 	private void Save()
 	{
-		string Dir = Path.GetDirectoryName(ConfigPath)!;
+		string Dir = Path.GetDirectoryName(_ConfigPath)!;
 		bool bDirExists = Directory.Exists(Dir);
 		if (!bDirExists)
 		{
@@ -42,23 +42,23 @@ public sealed class AuthConfig
 		}
 
 		JsonObject Root = new JsonObject();
-		foreach (KeyValuePair<string, string> Pair in Keys)
+		foreach (KeyValuePair<string, string> Pair in _Keys)
 		{
 			Root[Pair.Key] = Pair.Value;
 		}
 
-		File.WriteAllText(ConfigPath, Root.ToJsonString(JsonOptions));
+		File.WriteAllText(_ConfigPath, Root.ToJsonString(_JsonOptions));
 	}
 
 	public void Load()
 	{
-		bool bConfigExists = File.Exists(ConfigPath);
+		bool bConfigExists = File.Exists(_ConfigPath);
 		if (!bConfigExists)
 		{
 			return;
 		}
 
-		string Json = File.ReadAllText(ConfigPath);
+		string Json = File.ReadAllText(_ConfigPath);
 		JsonNode? Parsed = JsonNode.Parse(Json);
 		JsonObject? Root = null != Parsed ? Parsed.AsObject() : null;
 		if (null == Root)
@@ -71,7 +71,7 @@ public sealed class AuthConfig
 			string? Key = null != Field.Value ? Field.Value.GetValue<string>() : null;
 			if (null != Key)
 			{
-				Keys[Field.Key] = Key;
+				_Keys[Field.Key] = Key;
 			}
 		}
 	}

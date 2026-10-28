@@ -18,19 +18,19 @@ public sealed class ClaudeStreamReader
 		
 	}
 
-	private ActiveBlock? CurrentBlock;
+	private ActiveBlock? _CurrentBlock;
 
-	private readonly StringBuilder TextBuffer = new StringBuilder();
+	private readonly StringBuilder _TextBuffer = new StringBuilder();
 
-	private readonly StringBuilder ThinkingBuffer = new StringBuilder();
+	private readonly StringBuilder _ThinkingBuffer = new StringBuilder();
 
-	private string? ThinkingSignature;
+	private string? _ThinkingSignature;
 	
 	public StopReason? FinalStopReason;
 
-	private readonly List<Block> AssistantBlocks = new List<Block>();
+	private readonly List<Block> _AssistantBlocks = new List<Block>();
 	
-	public IReadOnlyList<Block> Blocks => AssistantBlocks;
+	public IReadOnlyList<Block> AssistantBlocks => _AssistantBlocks;
 
 	public ChatEvent? Process(RawMessageStreamEvent RawEvent)
 	{
@@ -82,14 +82,14 @@ public sealed class ClaudeStreamReader
 		bool bIsTextBlock = BlockStartEvent.ContentBlock.TryPickText(out _);
 		if (bIsTextBlock)
 		{
-			CurrentBlock = new ActiveBlock.Text();
+			_CurrentBlock = new ActiveBlock.Text();
 		}
 		else
 		{
 			bool bIsThinkingBlock = BlockStartEvent.ContentBlock.TryPickThinking(out _);
 			if (bIsThinkingBlock)
 			{
-				CurrentBlock = new ActiveBlock.Thinking();
+				_CurrentBlock = new ActiveBlock.Thinking();
 			}
 		}
 
@@ -98,14 +98,14 @@ public sealed class ClaudeStreamReader
 
 	private ChatEvent? ProcessBlockDelta(RawContentBlockDeltaEvent BlockDeltaEvent)
 	{
-		switch (CurrentBlock)
+		switch (_CurrentBlock)
 		{
 			case ActiveBlock.Text:
 			{
 				bool bIsTextDelta = BlockDeltaEvent.Delta.TryPickText(out TextDelta? TextDelta);
 				if (bIsTextDelta)
 				{
-					TextBuffer.Append(TextDelta!.Text);
+					_TextBuffer.Append(TextDelta!.Text);
 					ChatEvent.Assistant AssistantEvent = new ChatEvent.Assistant(TextDelta.Text);
 					return AssistantEvent;
 				}
@@ -117,7 +117,7 @@ public sealed class ClaudeStreamReader
 				bool bIsThinkingDelta = BlockDeltaEvent.Delta.TryPickThinking(out ThinkingDelta? ThinkingDelta);
 				if (bIsThinkingDelta)
 				{
-					ThinkingBuffer.Append(ThinkingDelta!.Thinking);
+					_ThinkingBuffer.Append(ThinkingDelta!.Thinking);
 					ChatEvent.Thinking ThinkingEvent = new ChatEvent.Thinking(ThinkingDelta.Thinking);
 					return ThinkingEvent;
 				}
@@ -126,7 +126,7 @@ public sealed class ClaudeStreamReader
 					bool bIsSignatureDelta = BlockDeltaEvent.Delta.TryPickSignature(out SignatureDelta? SignatureDelta);
 					if (bIsSignatureDelta)
 					{
-						ThinkingSignature = SignatureDelta!.Signature;
+						_ThinkingSignature = SignatureDelta!.Signature;
 					}
 				}
 				return null;
@@ -141,32 +141,32 @@ public sealed class ClaudeStreamReader
 
 	private ChatEvent? ProcessBlockStop()
 	{
-		switch (CurrentBlock)
+		switch (_CurrentBlock)
 		{
 			case ActiveBlock.Text:
 			{
-				if (0 < TextBuffer.Length)
+				if (0 < _TextBuffer.Length)
 				{
-					AssistantBlocks.Add(new Block.Text(TextBuffer.ToString()));
-					TextBuffer.Clear();
+					_AssistantBlocks.Add(new Block.Text(_TextBuffer.ToString()));
+					_TextBuffer.Clear();
 				}
 				break;
 			}
 
 			case ActiveBlock.Thinking:
 			{
-				if (0 < ThinkingBuffer.Length || null != ThinkingSignature)
+				if (0 < _ThinkingBuffer.Length || null != _ThinkingSignature)
 				{
-					VendorPayload? Payload = null != ThinkingSignature ? new VendorPayload(ModelVendor.Claude, ThinkingSignature) : null;
-					AssistantBlocks.Add(new Block.Thinking(ThinkingBuffer.ToString(), Payload));
-					ThinkingBuffer.Clear();
-					ThinkingSignature = null;
+					VendorPayload? Payload = null != _ThinkingSignature ? new VendorPayload(ModelVendor.Claude, _ThinkingSignature) : null;
+					_AssistantBlocks.Add(new Block.Thinking(_ThinkingBuffer.ToString(), Payload));
+					_ThinkingBuffer.Clear();
+					_ThinkingSignature = null;
 				}
 				break;
 			}
 		}
 
-		CurrentBlock = null;
+		_CurrentBlock = null;
 		return null;
 	}
 
@@ -190,7 +190,7 @@ public sealed class ClaudeStreamReader
 
 		AssistantSpan CompletedSpan = new AssistantSpan
 		{
-			AssistantBlocks = AssistantBlocks.ToList(),
+			AssistantBlocks = _AssistantBlocks.ToList(),
 		};
 
 		ModelTurnResult.EndSpan EndResult = new ModelTurnResult.EndSpan(CompletedSpan);

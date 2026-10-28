@@ -10,16 +10,16 @@ namespace MyAgent.Backend.Provider.Claude;
 
 public sealed class ClaudeProvider : IModelProvider
 {
-	private readonly AuthConfig Auth;
+	private readonly AuthConfig _Auth;
 
 	public ClaudeProvider(AuthConfig InAuth)
 	{
-		Auth = InAuth;
+		_Auth = InAuth;
 	}
 
-	private AnthropicClient? Client;
+	private AnthropicClient? _Client;
 
-	private string? ClientKey;
+	private string? _ClientKey;
 
 	public ModelVendor Vendor => ModelVendor.Claude;
 
@@ -29,20 +29,20 @@ public sealed class ClaudeProvider : IModelProvider
 
 	public string? CheckReady()
 	{
-		string? Problem = Auth.HasKey(KeyName) ? null : $"{KeyLabel}가 설정되지 않았습니다.";
+		string? Problem = _Auth.HasKey(KeyName) ? null : $"{KeyLabel}가 설정되지 않았습니다.";
 		return Problem;
 	}
 	
 	private AnthropicClient GetClient()
 	{
-		string Key = Auth.GetKey(KeyName)!;
-		if (null == Client || ClientKey != Key)
+		string Key = _Auth.GetKey(KeyName)!;
+		if (null == _Client || _ClientKey != Key)
 		{
-			Client = new AnthropicClient { ApiKey = Key };
-			ClientKey = Key;
+			_Client = new AnthropicClient { ApiKey = Key };
+			_ClientKey = Key;
 		}
 
-		return Client;
+		return _Client;
 	}
 
 	public async IAsyncEnumerable<ChatEvent> StreamAsync(ModelRequest Request, ModelTurn Turn, [EnumeratorCancellation] CancellationToken CancelToken = default)
