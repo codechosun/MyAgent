@@ -60,7 +60,7 @@ public sealed class AuthConfig
 
 		string Json = File.ReadAllText(_ConfigPath);
 		JsonNode? Parsed = JsonNode.Parse(Json);
-		JsonObject? Root = null != Parsed ? Parsed.AsObject() : null;
+		JsonObject? Root = Parsed != null ? Parsed.AsObject() : null;
 		if (null == Root)
 		{
 			return;
@@ -68,8 +68,8 @@ public sealed class AuthConfig
 
 		foreach (KeyValuePair<string, JsonNode?> Field in Root)
 		{
-			string? Key = null != Field.Value ? Field.Value.GetValue<string>() : null;
-			if (null != Key)
+			string? Key = Field.Value != null ? Field.Value.GetValue<string>() : null;
+			if (Key != null)
 			{
 				_Keys[Field.Key] = Key;
 			}

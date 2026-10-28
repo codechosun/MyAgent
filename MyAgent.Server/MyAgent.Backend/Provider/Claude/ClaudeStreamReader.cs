@@ -155,9 +155,9 @@ public sealed class ClaudeStreamReader
 
 			case ActiveBlock.Thinking:
 			{
-				if (0 < _ThinkingBuffer.Length || null != _ThinkingSignature)
+				if (0 < _ThinkingBuffer.Length || _ThinkingSignature != null)
 				{
-					VendorPayload? Payload = null != _ThinkingSignature ? new VendorPayload(ModelVendor.Claude, _ThinkingSignature) : null;
+					VendorPayload? Payload = _ThinkingSignature != null ? new VendorPayload(ModelVendor.Claude, _ThinkingSignature) : null;
 					_AssistantBlocks.Add(new Block.Thinking(_ThinkingBuffer.ToString(), Payload));
 					_ThinkingBuffer.Clear();
 					_ThinkingSignature = null;
@@ -172,7 +172,7 @@ public sealed class ClaudeStreamReader
 
 	private ChatEvent? ProcessMessageDelta(RawMessageDeltaEvent MessageDeltaEvent)
 	{
-		if (null != MessageDeltaEvent.Delta.StopReason)
+		if (MessageDeltaEvent.Delta.StopReason != null)
 		{
 			FinalStopReason = MessageDeltaEvent.Delta.StopReason;
 		}

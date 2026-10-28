@@ -54,7 +54,7 @@ public sealed class ClaudeProvider : IModelProvider
 		await foreach (RawMessageStreamEvent RawEvent in RawEvents)
 		{
 			ChatEvent? Event = Reader.Process(RawEvent);
-			if (null != Event)
+			if (Event != null)
 			{
 				yield return Event;
 			}

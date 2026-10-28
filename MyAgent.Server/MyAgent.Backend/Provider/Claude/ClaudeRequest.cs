@@ -30,7 +30,7 @@ public static class ClaudeRequest
 
 		foreach (MessageSpan MessageSpan in Spans)
 		{
-			if (null != MessageSpan.UserInput)
+			if (MessageSpan.UserInput != null)
 			{
 				Messages.Add(ToUserMessage(MessageSpan.UserInput));
 			}
@@ -84,7 +84,7 @@ public static class ClaudeRequest
 					// 서명 없는 Thinking Block을 보내면 Claude API가 요청을 거부함.
 					// 다른 회사의 생각은 보내지 않음.
 
-					if (null == ThinkingBlock.Payload || ModelVendor.Claude != ThinkingBlock.Payload.Vendor)
+					if (null == ThinkingBlock.Payload || ThinkingBlock.Payload.Vendor != ModelVendor.Claude)
 					{
 						// Payload가 없거나 Claude의 것이 아니면 break로 건너뜀.
 
