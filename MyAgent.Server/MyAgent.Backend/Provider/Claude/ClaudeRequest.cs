@@ -17,7 +17,7 @@ public static class ClaudeRequest
 		{
 			Model = Request.Model,
 			MaxTokens = Request.MaxTokens,
-			Messages = ToMessages(Request.Messages),
+			Messages = ToMessages(Request.MessageSpans),
 			Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
 			OutputConfig = new OutputConfig { Effort = Effort.High }
 		};

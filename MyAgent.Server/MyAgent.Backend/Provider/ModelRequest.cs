@@ -16,6 +16,6 @@ public sealed record ModelRequest
 	public required int MaxTokens { get; init; }
 		// 이번 답에 쓸 수 있는 최대 Token 수.
 
-	public required IReadOnlyList<MessageSpan> Messages { get; init; }
+	public required IReadOnlyList<MessageSpan> MessageSpans { get; init; }
 		// 지금까지의 대화 히스토리.
 }
