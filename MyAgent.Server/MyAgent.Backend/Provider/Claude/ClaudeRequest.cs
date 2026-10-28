@@ -9,21 +9,6 @@ namespace MyAgent.Backend.Provider.Claude;
 
 public static class ClaudeRequest
 {
-	public static MessageCreateParams Build(ModelRequest ModelRequest)
-	{
-		// 우리 요청을 Claude의 요청으로 바꾼다.
-
-		MessageCreateParams Parameters = new MessageCreateParams
-		{
-			Model = ModelRequest.Model,
-			MaxTokens = ModelRequest.MaxTokens,
-			Messages = ToMessages(ModelRequest.MessageSpans),
-			Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
-			OutputConfig = new OutputConfig { Effort = Effort.High }
-		};
-		return Parameters;
-	}
-	
 	public static List<MessageParam> ToMessages(IReadOnlyList<MessageSpan> MessageSpans)
 	{
 		List<MessageParam> MessageParams = new List<MessageParam>();
@@ -99,5 +84,20 @@ public static class ClaudeRequest
 
 		MessageParam AssistantMessage = new MessageParam { Role = Role.Assistant, Content = ContentBlockParams };
 		return AssistantMessage;
+	}
+
+	public static MessageCreateParams Build(ModelRequest ModelRequest)
+	{
+		// 우리 요청을 Claude의 요청으로 바꾼다.
+
+		MessageCreateParams Parameters = new MessageCreateParams
+		{
+			Model = ModelRequest.Model,
+			MaxTokens = ModelRequest.MaxTokens,
+			Messages = ToMessages(ModelRequest.MessageSpans),
+			Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
+			OutputConfig = new OutputConfig { Effort = Effort.High }
+		};
+		return Parameters;
 	}
 }
