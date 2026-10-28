@@ -81,12 +81,16 @@ public sealed class ClaudeStreamReader
 	{
 		bool bIsTextBlock = BlockStartEvent.ContentBlock.TryPickText(out _);
 		if (bIsTextBlock)
+		{
 			CurrentBlock = new ActiveBlock.Text();
+		}
 		else
 		{
 			bool bIsThinkingBlock = BlockStartEvent.ContentBlock.TryPickThinking(out _);
 			if (bIsThinkingBlock)
+			{
 				CurrentBlock = new ActiveBlock.Thinking();
+			}
 		}
 
 		return null;
@@ -97,6 +101,7 @@ public sealed class ClaudeStreamReader
 		switch (CurrentBlock)
 		{
 			case ActiveBlock.Text:
+			{
 				bool bIsTextDelta = BlockDeltaEvent.Delta.TryPickText(out TextDelta? TextDelta);
 				if (bIsTextDelta)
 				{
@@ -105,8 +110,10 @@ public sealed class ClaudeStreamReader
 					return AssistantEvent;
 				}
 				return null;
+			}
 
 			case ActiveBlock.Thinking:
+			{
 				bool bIsThinkingDelta = BlockDeltaEvent.Delta.TryPickThinking(out ThinkingDelta? ThinkingDelta);
 				if (bIsThinkingDelta)
 				{
@@ -123,9 +130,12 @@ public sealed class ClaudeStreamReader
 					}
 				}
 				return null;
+			}
 
 			default:
+			{
 				return null;
+			}
 		}
 	}
 
@@ -135,7 +145,7 @@ public sealed class ClaudeStreamReader
 		{
 			case ActiveBlock.Text:
 			{
-				if (TextBuffer.Length > 0)
+				if (0 < TextBuffer.Length)
 				{
 					AssistantBlocks.Add(new Block.Text(TextBuffer.ToString()));
 					TextBuffer.Clear();
@@ -145,9 +155,9 @@ public sealed class ClaudeStreamReader
 
 			case ActiveBlock.Thinking:
 			{
-				if (ThinkingBuffer.Length > 0 || ThinkingSignature != null)
+				if (0 < ThinkingBuffer.Length || null != ThinkingSignature)
 				{
-					VendorPayload? Payload = ThinkingSignature != null ? new VendorPayload(ModelVendor.Claude, ThinkingSignature) : null;
+					VendorPayload? Payload = null != ThinkingSignature ? new VendorPayload(ModelVendor.Claude, ThinkingSignature) : null;
 					AssistantBlocks.Add(new Block.Thinking(ThinkingBuffer.ToString(), Payload));
 					ThinkingBuffer.Clear();
 					ThinkingSignature = null;
@@ -162,8 +172,10 @@ public sealed class ClaudeStreamReader
 
 	private ChatEvent? ProcessMessageDelta(RawMessageDeltaEvent MessageDeltaEvent)
 	{
-		if (MessageDeltaEvent.Delta.StopReason != null)
+		if (null != MessageDeltaEvent.Delta.StopReason)
+		{
 			FinalStopReason = MessageDeltaEvent.Delta.StopReason;
+		}
 
 		return null;
 	}

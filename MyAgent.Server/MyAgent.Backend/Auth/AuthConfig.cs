@@ -37,11 +37,15 @@ public sealed class AuthConfig
 		string Dir = Path.GetDirectoryName(ConfigPath)!;
 		bool bDirExists = Directory.Exists(Dir);
 		if (!bDirExists)
+		{
 			Directory.CreateDirectory(Dir);
+		}
 
 		JsonObject Root = new JsonObject();
 		foreach (KeyValuePair<string, string> Pair in Keys)
+		{
 			Root[Pair.Key] = Pair.Value;
+		}
 
 		File.WriteAllText(ConfigPath, Root.ToJsonString(JsonOptions));
 	}
@@ -50,19 +54,25 @@ public sealed class AuthConfig
 	{
 		bool bConfigExists = File.Exists(ConfigPath);
 		if (!bConfigExists)
+		{
 			return;
+		}
 
 		string Json = File.ReadAllText(ConfigPath);
 		JsonNode? Parsed = JsonNode.Parse(Json);
-		JsonObject? Root = Parsed != null ? Parsed.AsObject() : null;
-		if (Root == null)
+		JsonObject? Root = null != Parsed ? Parsed.AsObject() : null;
+		if (null == Root)
+		{
 			return;
+		}
 
 		foreach (KeyValuePair<string, JsonNode?> Field in Root)
 		{
-			string? Key = Field.Value != null ? Field.Value.GetValue<string>() : null;
-			if (Key != null)
+			string? Key = null != Field.Value ? Field.Value.GetValue<string>() : null;
+			if (null != Key)
+			{
 				Keys[Field.Key] = Key;
+			}
 		}
 	}
 }

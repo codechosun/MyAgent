@@ -30,8 +30,10 @@ public static class ClaudeRequest
 
 		foreach (MessageSpan MessageSpan in Spans)
 		{
-			if (MessageSpan.UserInput != null)
+			if (null != MessageSpan.UserInput)
+			{
 				Messages.Add(ToUserMessage(MessageSpan.UserInput));
+			}
 
 			foreach (AssistantSpan Span in MessageSpan.AssistantSpans)
 			{
@@ -50,7 +52,9 @@ public static class ClaudeRequest
 
 		bool bIsTextEmpty = string.IsNullOrWhiteSpace(Input.Text);
 		if (!bIsTextEmpty)
+		{
 			Blocks.Add(new TextBlockParam { Text = Input.Text });
+		}
 
 		MessageParam UserMessage = new MessageParam { Role = Role.User, Content = Blocks };
 		return UserMessage;
@@ -80,9 +84,12 @@ public static class ClaudeRequest
 					// 서명 없는 Thinking Block을 보내면 Claude API가 요청을 거부함.
 					// 다른 회사의 생각은 보내지 않음.
 
-					if (ThinkingBlock.Payload == null || ThinkingBlock.Payload.Vendor != ModelVendor.Claude)
+					if (null == ThinkingBlock.Payload || ModelVendor.Claude != ThinkingBlock.Payload.Vendor)
+					{
 						// Payload가 없거나 Claude의 것이 아니면 break로 건너뜀.
+
 						break;
+					}
 
 					ContentBlocks.Add(new ThinkingBlockParam { Thinking = ThinkingBlock.Content, Signature = ThinkingBlock.Payload.Data });
 					break;

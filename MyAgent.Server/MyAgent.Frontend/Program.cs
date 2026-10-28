@@ -45,11 +45,15 @@ while (true)
 
 	bool bIsInputEmpty = string.IsNullOrWhiteSpace(Input);
 	if (bIsInputEmpty)
+	{
 		continue;
+	}
 
 	bool bIsExit = Input!.Equals("exit", StringComparison.OrdinalIgnoreCase);
 	if (bIsExit)
+	{
 		break;
+	}
 	
 	MessageSpan CurrentMessageSpan = AgentSession.Conversation.AddMessageSpan(Input);
 	
@@ -67,12 +71,16 @@ while (true)
 		switch (Event)
 		{
 			case ChatEvent.Thinking Think:
+			{
 				Console.Write(Think.Content);
 				break;
+			}
 
 			case ChatEvent.Assistant Reply:
+			{
 				Console.Write(Reply.Content);
 				break;
+			}
 		}
 	}
 

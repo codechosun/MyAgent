@@ -36,7 +36,7 @@ public sealed class ClaudeProvider : IModelProvider
 	private AnthropicClient GetClient()
 	{
 		string Key = Auth.GetKey(KeyName)!;
-		if (Client == null || ClientKey != Key)
+		if (null == Client || ClientKey != Key)
 		{
 			Client = new AnthropicClient { ApiKey = Key };
 			ClientKey = Key;
@@ -54,8 +54,10 @@ public sealed class ClaudeProvider : IModelProvider
 		await foreach (RawMessageStreamEvent RawEvent in RawEvents)
 		{
 			ChatEvent? Event = Reader.Process(RawEvent);
-			if (Event != null)
+			if (null != Event)
+			{
 				yield return Event;
+			}
 		}
 
 		Turn.Result = Reader.Complete();
