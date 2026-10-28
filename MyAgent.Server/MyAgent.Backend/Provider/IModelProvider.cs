@@ -6,7 +6,7 @@ namespace MyAgent.Backend.Provider;
 
 public interface IModelProvider
 {
-	ModelVendor Vendor { get; }
+	ModelVendor ModelVendor { get; }
 
 	string KeyName { get; }
 
@@ -14,6 +14,6 @@ public interface IModelProvider
 
 	string? CheckReady();
 
-	IAsyncEnumerable<ChatEvent> StreamAsync(ModelRequest Request, ModelTurn Turn, CancellationToken CancelToken = default);
+	IAsyncEnumerable<ChatEvent> StreamAsync(ModelRequest ModelRequest, ModelTurn ModelTurn, CancellationToken CancelToken = default);
 
 }

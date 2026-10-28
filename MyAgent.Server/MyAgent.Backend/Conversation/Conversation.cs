@@ -14,14 +14,14 @@ public sealed class Conversation
 		// MessageSpan 목록을 읽기 전용으로 내놓는다.
 		// Provider가 회사의 요청 모양으로 옮길 때 사용함.
 
-	public MessageSpan AddMessageSpan(UserInput Input)
+	public MessageSpan AddMessageSpan(UserInput UserInput)
 	{
 		// 사용자가 입력하면 새 MessageSpan을 만들어 _MessageSpans에 넣고 반환.
 		// 반환하는 이유는 이번 턴에 대한 Model의 응답을 이 MessageSpan에 추가해야하기 때문.
 		// 매개변수는 UserInput이지만,
 		// implicit operator를 통해 Program.cs에서 전달한 string이 그대로 들어온다.
 
-		MessageSpan MessageSpan = new MessageSpan { UserInput = Input };
+		MessageSpan MessageSpan = new MessageSpan { UserInput = UserInput };
 		_MessageSpans.Add(MessageSpan);
 
 		return MessageSpan;

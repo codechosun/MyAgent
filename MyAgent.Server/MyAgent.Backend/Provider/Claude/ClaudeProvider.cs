@@ -21,7 +21,7 @@ public sealed class ClaudeProvider : IModelProvider
 
 	private string? _ClientKey;
 
-	public ModelVendor Vendor => ModelVendor.Claude;
+	public ModelVendor ModelVendor => ModelVendor.Claude;
 
 	public string KeyName => "claude_api_key";
 
@@ -45,21 +45,21 @@ public sealed class ClaudeProvider : IModelProvider
 		return _Client;
 	}
 
-	public async IAsyncEnumerable<ChatEvent> StreamAsync(ModelRequest Request, ModelTurn Turn, [EnumeratorCancellation] CancellationToken CancelToken = default)
+	public async IAsyncEnumerable<ChatEvent> StreamAsync(ModelRequest ModelRequest, ModelTurn ModelTurn, [EnumeratorCancellation] CancellationToken CancelToken = default)
 	{
-		MessageCreateParams Parameters = ClaudeRequest.Build(Request);
-		ClaudeStreamReader Reader = new ClaudeStreamReader();
+		MessageCreateParams Parameters = ClaudeRequest.Build(ModelRequest);
+		ClaudeStreamReader ClaudeStreamReader = new ClaudeStreamReader();
 
 		IAsyncEnumerable<RawMessageStreamEvent> RawEvents = GetClient().Messages.CreateStreaming(Parameters, CancelToken);
 		await foreach (RawMessageStreamEvent RawEvent in RawEvents)
 		{
-			ChatEvent? Event = Reader.Process(RawEvent);
-			if (Event != null)
+			ChatEvent? ChatEvent = ClaudeStreamReader.Process(RawEvent);
+			if (ChatEvent != null)
 			{
-				yield return Event;
+				yield return ChatEvent;
 			}
 		}
 
-		Turn.Result = Reader.Complete();
+		ModelTurn.ModelTurnResult = ClaudeStreamReader.Complete();
 	}
 }

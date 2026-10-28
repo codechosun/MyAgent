@@ -37,36 +37,36 @@ public sealed class ClaudeStreamReader
 		bool bIsMessageStart = RawEvent.TryPickStart(out RawMessageStartEvent? MessageStartEvent);
 		if (bIsMessageStart)
 		{
-			ChatEvent? Event = ProcessMessageStart(MessageStartEvent!);
-			return Event;
+			ChatEvent? ChatEvent = ProcessMessageStart(MessageStartEvent!);
+			return ChatEvent;
 		}
 
-		bool bIsBlockStart = RawEvent.TryPickContentBlockStart(out RawContentBlockStartEvent? BlockStartEvent);
+		bool bIsBlockStart = RawEvent.TryPickContentBlockStart(out RawContentBlockStartEvent? ContentBlockStartEvent);
 		if (bIsBlockStart)
 		{
-			ChatEvent? Event = ProcessBlockStart(BlockStartEvent!);
-			return Event;
+			ChatEvent? ChatEvent = ProcessBlockStart(ContentBlockStartEvent!);
+			return ChatEvent;
 		}
 
-		bool bIsBlockDelta = RawEvent.TryPickContentBlockDelta(out RawContentBlockDeltaEvent? BlockDeltaEvent);
+		bool bIsBlockDelta = RawEvent.TryPickContentBlockDelta(out RawContentBlockDeltaEvent? ContentBlockDeltaEvent);
 		if (bIsBlockDelta)
 		{
-			ChatEvent? Event = ProcessBlockDelta(BlockDeltaEvent!);
-			return Event;
+			ChatEvent? ChatEvent = ProcessBlockDelta(ContentBlockDeltaEvent!);
+			return ChatEvent;
 		}
 
-		bool bIsBlockStop = RawEvent.TryPickContentBlockStop(out RawContentBlockStopEvent? BlockStopEvent);
+		bool bIsBlockStop = RawEvent.TryPickContentBlockStop(out RawContentBlockStopEvent? ContentBlockStopEvent);
 		if (bIsBlockStop)
 		{
-			ChatEvent? Event = ProcessBlockStop();
-			return Event;
+			ChatEvent? ChatEvent = ProcessBlockStop();
+			return ChatEvent;
 		}
 
 		bool bIsMessageDelta = RawEvent.TryPickDelta(out RawMessageDeltaEvent? MessageDeltaEvent);
 		if (bIsMessageDelta)
 		{
-			ChatEvent? Event = ProcessMessageDelta(MessageDeltaEvent!);
-			return Event;
+			ChatEvent? ChatEvent = ProcessMessageDelta(MessageDeltaEvent!);
+			return ChatEvent;
 		}
 
 		return null;
@@ -77,16 +77,16 @@ public sealed class ClaudeStreamReader
 		return null;
 	}
 
-	private ChatEvent? ProcessBlockStart(RawContentBlockStartEvent BlockStartEvent)
+	private ChatEvent? ProcessBlockStart(RawContentBlockStartEvent ContentBlockStartEvent)
 	{
-		bool bIsTextBlock = BlockStartEvent.ContentBlock.TryPickText(out _);
+		bool bIsTextBlock = ContentBlockStartEvent.ContentBlock.TryPickText(out _);
 		if (bIsTextBlock)
 		{
 			_CurrentBlock = new ActiveBlock.Text();
 		}
 		else
 		{
-			bool bIsThinkingBlock = BlockStartEvent.ContentBlock.TryPickThinking(out _);
+			bool bIsThinkingBlock = ContentBlockStartEvent.ContentBlock.TryPickThinking(out _);
 			if (bIsThinkingBlock)
 			{
 				_CurrentBlock = new ActiveBlock.Thinking();
@@ -96,13 +96,13 @@ public sealed class ClaudeStreamReader
 		return null;
 	}
 
-	private ChatEvent? ProcessBlockDelta(RawContentBlockDeltaEvent BlockDeltaEvent)
+	private ChatEvent? ProcessBlockDelta(RawContentBlockDeltaEvent ContentBlockDeltaEvent)
 	{
 		switch (_CurrentBlock)
 		{
 			case ActiveBlock.Text:
 			{
-				bool bIsTextDelta = BlockDeltaEvent.Delta.TryPickText(out TextDelta? TextDelta);
+				bool bIsTextDelta = ContentBlockDeltaEvent.Delta.TryPickText(out TextDelta? TextDelta);
 				if (bIsTextDelta)
 				{
 					_TextBuffer.Append(TextDelta!.Text);
@@ -114,7 +114,7 @@ public sealed class ClaudeStreamReader
 
 			case ActiveBlock.Thinking:
 			{
-				bool bIsThinkingDelta = BlockDeltaEvent.Delta.TryPickThinking(out ThinkingDelta? ThinkingDelta);
+				bool bIsThinkingDelta = ContentBlockDeltaEvent.Delta.TryPickThinking(out ThinkingDelta? ThinkingDelta);
 				if (bIsThinkingDelta)
 				{
 					_ThinkingBuffer.Append(ThinkingDelta!.Thinking);
@@ -123,7 +123,7 @@ public sealed class ClaudeStreamReader
 				}
 				else
 				{
-					bool bIsSignatureDelta = BlockDeltaEvent.Delta.TryPickSignature(out SignatureDelta? SignatureDelta);
+					bool bIsSignatureDelta = ContentBlockDeltaEvent.Delta.TryPickSignature(out SignatureDelta? SignatureDelta);
 					if (bIsSignatureDelta)
 					{
 						_ThinkingSignature = SignatureDelta!.Signature;
@@ -157,8 +157,8 @@ public sealed class ClaudeStreamReader
 			{
 				if (0 < _ThinkingBuffer.Length || _ThinkingSignature != null)
 				{
-					VendorPayload? Payload = _ThinkingSignature != null ? new VendorPayload(ModelVendor.Claude, _ThinkingSignature) : null;
-					_AssistantBlocks.Add(new Block.Thinking(_ThinkingBuffer.ToString(), Payload));
+					VendorPayload? VendorPayload = _ThinkingSignature != null ? new VendorPayload(ModelVendor.Claude, _ThinkingSignature) : null;
+					_AssistantBlocks.Add(new Block.Thinking(_ThinkingBuffer.ToString(), VendorPayload));
 					_ThinkingBuffer.Clear();
 					_ThinkingSignature = null;
 				}

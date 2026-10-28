@@ -9,6 +9,6 @@ public sealed class ModelTurn
 	// IAsyncEnumerable을 돌려주는 메서드는 값을 따로 돌려줄 수 없으므로,
 	// 부르는 쪽이 빈 그릇을 넘기고 다 받은 뒤에 그릇을 볼 예정.
 
-	public ModelTurnResult? Result { get; set; }
+	public ModelTurnResult? ModelTurnResult { get; set; }
 		// 다음 행동과 완성된 AssistantSpan.
 }

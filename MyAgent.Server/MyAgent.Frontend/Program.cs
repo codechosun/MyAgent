@@ -15,27 +15,27 @@ Services.AddSingleton<IModelProvider, ClaudeProvider>();
 
 ServiceProvider ServiceProvider = Services.BuildServiceProvider();
 
-AuthConfig Auth = ServiceProvider.GetRequiredService<AuthConfig>();
+AuthConfig AuthConfig = ServiceProvider.GetRequiredService<AuthConfig>();
 AgentSession AgentSession = ServiceProvider.GetRequiredService<AgentSession>();
-IModelProvider Provider = ServiceProvider.GetRequiredService<IModelProvider>();
+IModelProvider ModelProvider = ServiceProvider.GetRequiredService<IModelProvider>();
 
-Auth.Load();
+AuthConfig.Load();
 
-bool bHasKey = Auth.HasKey(Provider.KeyName);
+bool bHasKey = AuthConfig.HasKey(ModelProvider.KeyName);
 if (!bHasKey)
 {
-	Console.Write($"{Provider.KeyLabel}를 입력하세요: ");
+	Console.Write($"{ModelProvider.KeyLabel}를 입력하세요: ");
 	string? Key = Console.ReadLine();
 
 	bool bIsKeyEmpty = string.IsNullOrWhiteSpace(Key);
 	if (bIsKeyEmpty)
 	{
-		Console.WriteLine($"{Provider.KeyLabel}가 입력되지 않았습니다.");
+		Console.WriteLine($"{ModelProvider.KeyLabel}가 입력되지 않았습니다.");
 		return;
 	}
 
-	Auth.SetKey(Provider.KeyName, Key!);
-	Console.WriteLine($"{Provider.KeyLabel} 저장 완료!");
+	AuthConfig.SetKey(ModelProvider.KeyName, Key!);
+	Console.WriteLine($"{ModelProvider.KeyLabel} 저장 완료!");
 }
 
 while (true)
@@ -57,34 +57,34 @@ while (true)
 	
 	MessageSpan CurrentMessageSpan = AgentSession.Conversation.AddMessageSpan(Input);
 	
-	ModelRequest Request = new ModelRequest
+	ModelRequest ModelRequest = new ModelRequest
 	{
 		Model = "claude-opus-5-5",
 		MaxTokens = 1024,
 		MessageSpans = AgentSession.Conversation.MessageSpans
 	};
 	
-	ModelTurn Turn = new ModelTurn();
-	IAsyncEnumerable<ChatEvent> Events = Provider.StreamAsync(Request, Turn);
-	await foreach (ChatEvent Event in Events)
+	ModelTurn ModelTurn = new ModelTurn();
+	IAsyncEnumerable<ChatEvent> ChatEvents = ModelProvider.StreamAsync(ModelRequest, ModelTurn);
+	await foreach (ChatEvent ChatEvent in ChatEvents)
 	{
-		switch (Event)
+		switch (ChatEvent)
 		{
-			case ChatEvent.Thinking Think:
+			case ChatEvent.Thinking ThinkingEvent:
 			{
-				Console.Write(Think.Content);
+				Console.Write(ThinkingEvent.Content);
 				break;
 			}
 
-			case ChatEvent.Assistant Reply:
+			case ChatEvent.Assistant AssistantEvent:
 			{
-				Console.Write(Reply.Content);
+				Console.Write(AssistantEvent.Content);
 				break;
 			}
 		}
 	}
 
-	switch (Turn.Result)
+	switch (ModelTurn.ModelTurnResult)
 	{
 		case ModelTurnResult.EndSpan EndResult:
 		{

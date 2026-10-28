@@ -9,72 +9,72 @@ namespace MyAgent.Backend.Provider.Claude;
 
 public static class ClaudeRequest
 {
-	public static MessageCreateParams Build(ModelRequest Request)
+	public static MessageCreateParams Build(ModelRequest ModelRequest)
 	{
 		// 우리 요청을 Claude의 요청으로 바꾼다.
 
 		MessageCreateParams Parameters = new MessageCreateParams
 		{
-			Model = Request.Model,
-			MaxTokens = Request.MaxTokens,
-			Messages = ToMessages(Request.MessageSpans),
+			Model = ModelRequest.Model,
+			MaxTokens = ModelRequest.MaxTokens,
+			Messages = ToMessages(ModelRequest.MessageSpans),
 			Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
 			OutputConfig = new OutputConfig { Effort = Effort.High }
 		};
 		return Parameters;
 	}
 	
-	public static List<MessageParam> ToMessages(IReadOnlyList<MessageSpan> Spans)
+	public static List<MessageParam> ToMessages(IReadOnlyList<MessageSpan> MessageSpans)
 	{
-		List<MessageParam> Messages = new List<MessageParam>();
+		List<MessageParam> MessageParams = new List<MessageParam>();
 
-		foreach (MessageSpan MessageSpan in Spans)
+		foreach (MessageSpan MessageSpan in MessageSpans)
 		{
 			if (MessageSpan.UserInput != null)
 			{
-				Messages.Add(ToUserMessage(MessageSpan.UserInput));
+				MessageParams.Add(ToUserMessage(MessageSpan.UserInput));
 			}
 
-			foreach (AssistantSpan Span in MessageSpan.AssistantSpans)
+			foreach (AssistantSpan AssistantSpan in MessageSpan.AssistantSpans)
 			{
-				Messages.Add(ToAssistantMessage(Span.AssistantBlocks));
+				MessageParams.Add(ToAssistantMessage(AssistantSpan.AssistantBlocks));
 			}
 		}
 
-		return Messages;
+		return MessageParams;
 	}
 
-	private static MessageParam ToUserMessage(UserInput Input)
+	private static MessageParam ToUserMessage(UserInput UserInput)
 	{
 		// UserInput을 Claude의 Messages.Content로 변환.
 
-		List<ContentBlockParam> Blocks = new List<ContentBlockParam>();
+		List<ContentBlockParam> ContentBlockParams = new List<ContentBlockParam>();
 
-		bool bIsTextEmpty = string.IsNullOrWhiteSpace(Input.Text);
+		bool bIsTextEmpty = string.IsNullOrWhiteSpace(UserInput.Text);
 		if (!bIsTextEmpty)
 		{
-			Blocks.Add(new TextBlockParam { Text = Input.Text });
+			ContentBlockParams.Add(new TextBlockParam { Text = UserInput.Text });
 		}
 
-		MessageParam UserMessage = new MessageParam { Role = Role.User, Content = Blocks };
+		MessageParam UserMessage = new MessageParam { Role = Role.User, Content = ContentBlockParams };
 		return UserMessage;
 	}
 
-	private static MessageParam ToAssistantMessage(IReadOnlyList<Block> Blocks)
+	private static MessageParam ToAssistantMessage(IReadOnlyList<Block> AssistantBlocks)
 	{
 		// MessageSpan.AssistantSpans 속에 AssistantBlock(우리 Block 타입)을 넘겨받아
 		// Claude의 ContentBlock으로 변환
 
-		List<ContentBlockParam> ContentBlocks = new List<ContentBlockParam>();
+		List<ContentBlockParam> ContentBlockParams = new List<ContentBlockParam>();
 			// 응답을 받을 때 블록으로 나뉘어 왔던 것처럼, 보낼 때도 ContentBlockParam 목록으로 보냄.
 
-		foreach (Block Block in Blocks)
+		foreach (Block Block in AssistantBlocks)
 		{
 			switch (Block)
 			{
 				case Block.Text TextBlock:
 				{
-					ContentBlocks.Add(new TextBlockParam { Text = TextBlock.Content });
+					ContentBlockParams.Add(new TextBlockParam { Text = TextBlock.Content });
 					break;
 				}
 
@@ -84,20 +84,20 @@ public static class ClaudeRequest
 					// 서명 없는 Thinking Block을 보내면 Claude API가 요청을 거부함.
 					// 다른 회사의 생각은 보내지 않음.
 
-					if (null == ThinkingBlock.Payload || ThinkingBlock.Payload.Vendor != ModelVendor.Claude)
+					if (null == ThinkingBlock.VendorPayload || ThinkingBlock.VendorPayload.ModelVendor != ModelVendor.Claude)
 					{
-						// Payload가 없거나 Claude의 것이 아니면 break로 건너뜀.
+						// VendorPayload가 없거나 Claude의 것이 아니면 break로 건너뜀.
 
 						break;
 					}
 
-					ContentBlocks.Add(new ThinkingBlockParam { Thinking = ThinkingBlock.Content, Signature = ThinkingBlock.Payload.Data });
+					ContentBlockParams.Add(new ThinkingBlockParam { Thinking = ThinkingBlock.Content, Signature = ThinkingBlock.VendorPayload.Data });
 					break;
 				}
 			}
 		}
 
-		MessageParam AssistantMessage = new MessageParam { Role = Role.Assistant, Content = ContentBlocks };
+		MessageParam AssistantMessage = new MessageParam { Role = Role.Assistant, Content = ContentBlockParams };
 		return AssistantMessage;
 	}
 }
