@@ -31,8 +31,6 @@ public static class ClaudeRequest
 
 	private static MessageParam ToUserMessage(UserInput UserInput)
 	{
-		// UserInput을 Claude의 Messages.Content로 변환.
-
 		List<ContentBlockParam> ContentBlockParams = new List<ContentBlockParam>();
 
 		bool bIsTextEmpty = string.IsNullOrWhiteSpace(UserInput.Text);
@@ -47,11 +45,7 @@ public static class ClaudeRequest
 
 	private static MessageParam ToAssistantMessage(IReadOnlyList<Block> AssistantBlocks)
 	{
-		// MessageSpan.AssistantSpans 속에 AssistantBlocks(우리 Block 타입)를 넘겨받아
-		// Claude의 ContentBlock으로 변환
-
 		List<ContentBlockParam> ContentBlockParams = new List<ContentBlockParam>();
-			// 응답을 받을 때 블록으로 나뉘어 왔던 것처럼, 보낼 때도 ContentBlockParam 목록으로 보냄.
 
 		foreach (Block Block in AssistantBlocks)
 		{
@@ -65,14 +59,8 @@ public static class ClaudeRequest
 
 				case Block.Thinking ThinkingBlock:
 				{
-					// Claude가 만든 생각만 서명과 함께 되돌려 보냄.
-					// 서명 없는 Thinking Block을 보내면 Claude API가 요청을 거부함.
-					// 다른 회사의 생각은 보내지 않음.
-
 					if (null == ThinkingBlock.VendorPayload || ThinkingBlock.VendorPayload.ModelVendor != ModelVendor.Claude)
 					{
-						// VendorPayload가 없거나 Claude의 것이 아니면 break로 건너뜀.
-
 						break;
 					}
 
@@ -88,16 +76,35 @@ public static class ClaudeRequest
 
 	public static MessageCreateParams Build(ModelRequest ModelRequest)
 	{
-		// 우리 요청을 Claude의 요청으로 바꾼다.
-
 		MessageCreateParams Parameters = new MessageCreateParams
 		{
 			Model = ModelRequest.Model,
 			MaxTokens = ModelRequest.MaxTokens,
 			Messages = ToMessages(ModelRequest.MessageSpans),
 			Thinking = new ThinkingConfigAdaptive { Display = Display.Summarized },
-			OutputConfig = new OutputConfig { Effort = Effort.High }
+			OutputConfig = new OutputConfig { Effort = Effort.High },
+			System = ToSystem(ModelRequest.SystemPrompt),
+			CacheControl = new CacheControlEphemeral()
+				// 이 한 줄로 System Prompt와 지난 대화가 모두 캐시됨.
+				// 요청의 앞부분(System Prompt, 앞선 대화)을 Claude 서버에 잠시 저장해 두고
+				// 다음 요청에서 다시 씁니다(4.3절).
 		};
 		return Parameters;
 	}
+	
+	private static MessageCreateParamsSystem? ToSystem(string? SystemPrompt)
+	{
+		// System Prompt를 TextBlockParam 하나에 담아 반환함.
+		// 빈 글을 보내면 API가 요청을 거절하므로 null을 반환.
+
+		bool bIsSystemPromptEmpty = string.IsNullOrEmpty(SystemPrompt);
+		if (bIsSystemPromptEmpty)
+		{
+			return null;
+		}
+
+		List<TextBlockParam> SystemBlocks = new List<TextBlockParam> { new TextBlockParam { Text = SystemPrompt! } };
+		return SystemBlocks;
+	}
+	
 }

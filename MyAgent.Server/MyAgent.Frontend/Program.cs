@@ -7,17 +7,20 @@ using MyAgent.Backend.Provider.Claude;
 using MyAgent.Backend.Agent;
 using MyAgent.Backend.Conversation;
 using MyAgent.Backend.Provider;
+using MyAgent.Backend.Prompt;
 
 ServiceCollection Services = new ServiceCollection();
 Services.AddSingleton<AuthConfig>();
 Services.AddSingleton<AgentSession>();
 Services.AddSingleton<IModelProvider, ClaudeProvider>();
+Services.AddSingleton<PromptBuilder>();
 
 ServiceProvider ServiceProvider = Services.BuildServiceProvider();
 
 AuthConfig AuthConfig = ServiceProvider.GetRequiredService<AuthConfig>();
 AgentSession AgentSession = ServiceProvider.GetRequiredService<AgentSession>();
 IModelProvider ModelProvider = ServiceProvider.GetRequiredService<IModelProvider>();
+PromptBuilder PromptBuilder = ServiceProvider.GetRequiredService<PromptBuilder>();
 
 AuthConfig.Load();
 
@@ -57,12 +60,16 @@ while (true)
 	
 	MessageSpan CurrentMessageSpan = AgentSession.Conversation.AddMessageSpan(Input);
 	
-	ModelRequest ModelRequest = new ModelRequest
-	{
-		Model = "claude-opus-5-5",
-		MaxTokens = 1024,
-		MessageSpans = AgentSession.Conversation.MessageSpans
-	};
+	// ModelRequest ModelRequest = new ModelRequest
+	// {
+	// 	Model = "claude-opus-5-5",
+	// 	MaxTokens = 1024,
+	// 	MessageSpans = AgentSession.Conversation.MessageSpans
+	// };
+	ModelRequest ModelRequest = PromptBuilder.Build(AgentSession);
+		// 요청 재료를 PromptBuilder가 만든다
+		// Model API에 요청을 한 번 보낼 때 담는 재료(System Prompt와 대화 전체)
+		// 이제 Program.cs는 "무엇을 보낼지"를 몰라도 됨. ClaudeRequest가 그걸 담당하게 됨.
 	
 	ModelTurn ModelTurn = new ModelTurn();
 	IAsyncEnumerable<ChatEvent> ChatEvents = ModelProvider.StreamAsync(ModelRequest, ModelTurn);
