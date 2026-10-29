@@ -34,13 +34,6 @@ public sealed class ClaudeStreamReader
 
 	public ChatEvent? Process(RawMessageStreamEvent RawEvent)
 	{
-		bool bIsMessageStart = RawEvent.TryPickStart(out RawMessageStartEvent? MessageStartEvent);
-		if (bIsMessageStart)
-		{
-			ChatEvent? ChatEvent = ProcessMessageStart(MessageStartEvent!);
-			return ChatEvent;
-		}
-
 		bool bIsBlockStart = RawEvent.TryPickContentBlockStart(out RawContentBlockStartEvent? ContentBlockStartEvent);
 		if (bIsBlockStart)
 		{
@@ -69,11 +62,6 @@ public sealed class ClaudeStreamReader
 			return ChatEvent;
 		}
 
-		return null;
-	}
-
-	private ChatEvent? ProcessMessageStart(RawMessageStartEvent MessageStartEvent)
-	{
 		return null;
 	}
 
